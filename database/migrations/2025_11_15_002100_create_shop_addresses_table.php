@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CountryCode;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,7 +18,9 @@ return new class extends Migration
                 ->constrained('shops')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
-            $table->string('country', 100)->default('Germany')->comment('Country of the shop location');
+            $table->string('country', 100)
+                ->default(CountryCode::GERMANY->value)
+                ->comment('Country of the shop location');
             $table->string('postal_code', 20)->comment('Postal/ZIP code');
             $table->string('city', 120)->comment('City name');
             $table->string('street', 150)->comment('Street name');

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\CountryCode;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -19,7 +20,7 @@ class ShopAddressSeeder extends Seeder
             // REWE locations
             [
                 'shop_name' => 'REWE',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22459',
                 'city' => 'Hamburg',
                 'street' => 'Tibarg',
@@ -29,7 +30,7 @@ class ShopAddressSeeder extends Seeder
             ],
             [
                 'shop_name' => 'REWE',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22299',
                 'city' => 'Hamburg',
                 'street' => 'Osterfeldestrasse',
@@ -38,7 +39,7 @@ class ShopAddressSeeder extends Seeder
             ],
             [
                 'shop_name' => 'REWE',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22301',
                 'city' => 'Hamburg',
                 'street' => 'Dorotheenstrasse',
@@ -47,7 +48,7 @@ class ShopAddressSeeder extends Seeder
             ],
             [
                 'shop_name' => 'REWE',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22299',
                 'city' => 'Hamburg',
                 'street' => 'Fuhlsbuettler Str.',
@@ -58,7 +59,7 @@ class ShopAddressSeeder extends Seeder
             // Kaufland locations
             [
                 'shop_name' => 'Kaufland',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22529',
                 'city' => 'Hamburg',
                 'street' => 'Nedderfeld',
@@ -68,7 +69,7 @@ class ShopAddressSeeder extends Seeder
             ],
             [
                 'shop_name' => 'Kaufland',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22761',
                 'city' => 'Hamburg',
                 'street' => 'Stresemannstrasse',
@@ -77,7 +78,7 @@ class ShopAddressSeeder extends Seeder
             ],
             [
                 'shop_name' => 'Kaufland',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22307',
                 'city' => 'Hamburg',
                 'street' => 'Fuhlsbuettler Str.',
@@ -88,7 +89,7 @@ class ShopAddressSeeder extends Seeder
             // Lidl locations
             [
                 'shop_name' => 'Lidl',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '20251',
                 'city' => 'Hamburg',
                 'street' => 'Troplowitzstrasse',
@@ -98,7 +99,7 @@ class ShopAddressSeeder extends Seeder
             ],
             [
                 'shop_name' => 'Lidl',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22525',
                 'city' => 'Hamburg',
                 'street' => 'Kieler Straße',
@@ -108,7 +109,7 @@ class ShopAddressSeeder extends Seeder
 
             [
                 'shop_name' => 'BAUHAUS',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22529',
                 'city' => 'Hamburg',
                 'street' => 'Alte Kollaustraße',
@@ -118,7 +119,7 @@ class ShopAddressSeeder extends Seeder
             ],
             [
                 'shop_name' => 'Edeka',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22529',
                 'city' => 'Hamburg',
                 'street' => 'Fuhlsbuettler Str.',
@@ -128,7 +129,7 @@ class ShopAddressSeeder extends Seeder
             ],
             [
                 'shop_name' => 'Fahrschule Altona',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22765',
                 'city' => 'Hamburg',
                 'street' => 'Lobuschstraße',
@@ -138,7 +139,7 @@ class ShopAddressSeeder extends Seeder
             ],
             [
                 'shop_name' => 'IKEA',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22457',
                 'city' => 'Hamburg',
                 'street' => 'Wunderbrunnen',
@@ -148,7 +149,7 @@ class ShopAddressSeeder extends Seeder
             ],
             [
                 'shop_name' => 'OBI',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22529',
                 'city' => 'Hamburg',
                 'street' => 'Nedderfeld',
@@ -158,7 +159,7 @@ class ShopAddressSeeder extends Seeder
             ],
             [
                 'shop_name' => 'A.T.U.',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22453',
                 'city' => 'Hamburg',
                 'street' => 'Kollaustrasse',
@@ -168,7 +169,7 @@ class ShopAddressSeeder extends Seeder
             ],
             [
                 'shop_name' => 'easyApotheke',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22529',
                 'city' => 'Hamburg',
                 'street' => 'Nedderfeld',
@@ -178,7 +179,7 @@ class ShopAddressSeeder extends Seeder
             ],
             [
                 'shop_name' => 'Apotheke a.d. Friedenseiche Nikolaus Wendel',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '20251',
                 'city' => 'Hamburg',
                 'street' => 'Eppendorfer Marktplatz',
@@ -188,7 +189,7 @@ class ShopAddressSeeder extends Seeder
             ],
             [
                 'shop_name' => 'ROHLFS BÄCKEREI KONDITOREI GmbH',
-                'country' => 'Germany',
+                'country' => CountryCode::GERMANY->value,
                 'postal_code' => '22299',
                 'city' => 'Hamburg',
                 'street' => 'Winterhuder Marktplatz',
@@ -207,7 +208,7 @@ class ShopAddressSeeder extends Seeder
 
                 return [
                     'shop_id' => $shopId,
-                    'country' => $address['country'] ?? 'Germany',
+                    'country' => $address['country'] ?? CountryCode::GERMANY->value,
                     'postal_code' => $address['postal_code'],
                     'city' => $address['city'],
                     'street' => $address['street'],
@@ -227,6 +228,10 @@ class ShopAddressSeeder extends Seeder
             return;
         }
 
-        DB::table('shop_addresses')->insert($addresses);
+        DB::table('shop_addresses')->upsert(
+            $addresses,
+            ['shop_id', 'postal_code', 'street', 'house_number'],
+            ['country', 'city', 'is_primary', 'display_order', 'is_active', 'updated_at']
+        );
     }
 }
