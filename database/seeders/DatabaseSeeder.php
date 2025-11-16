@@ -19,6 +19,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CurrencySeeder::class,
             PaymentMethodSeeder::class,
+            CategorySeeder::class,
+            BrandSeeder::class,
+            ProductSeeder::class,
+            ShopSeeder::class,
+            ShopAddressSeeder::class,
         ]);
 
         // User::factory(10)->create();
