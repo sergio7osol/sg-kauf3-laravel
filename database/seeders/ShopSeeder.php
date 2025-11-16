@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Enums\CountryCode;
+use App\Enums\PurchaseChannel;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -17,24 +19,24 @@ class ShopSeeder extends Seeder
 
         // Verified shops with physical presence that we actively track
         $shops = [
-            ['name' => 'REWE', 'type' => 'in_store', 'country' => 'Germany', 'display_order' => 1],
-            ['name' => 'Kaufland', 'type' => 'in_store', 'country' => 'Germany', 'display_order' => 2],
-            ['name' => 'Lidl', 'type' => 'in_store', 'country' => 'Germany', 'display_order' => 3],
-            ['name' => 'BAUHAUS', 'type' => 'in_store', 'country' => 'Germany', 'display_order' => 4],
-            ['name' => 'Edeka', 'type' => 'in_store', 'country' => 'Germany', 'display_order' => 5],
-            ['name' => 'Fahrschule Altona', 'type' => 'in_store', 'country' => 'Germany', 'display_order' => 6],
-            ['name' => 'IKEA', 'type' => 'in_store', 'country' => 'Germany', 'display_order' => 7],
-            ['name' => 'OBI', 'type' => 'in_store', 'country' => 'Germany', 'display_order' => 8],
-            ['name' => 'A.T.U.', 'type' => 'in_store', 'country' => 'Germany', 'display_order' => 9],
-            ['name' => 'easyApotheke', 'type' => 'in_store', 'country' => 'Germany', 'display_order' => 10],
-            ['name' => 'Apotheke a.d. Friedenseiche Nikolaus Wendel', 'type' => 'in_store', 'country' => 'Germany', 'display_order' => 11],
-            ['name' => 'ROHLFS BÄCKEREI KONDITOREI GmbH', 'type' => 'in_store', 'country' => 'Germany', 'display_order' => 12],
+            ['name' => 'REWE', 'type' => PurchaseChannel::IN_STORE->value, 'country' => CountryCode::GERMANY->value, 'display_order' => 1],
+            ['name' => 'Kaufland', 'type' => PurchaseChannel::IN_STORE->value, 'country' => CountryCode::GERMANY->value, 'display_order' => 2],
+            ['name' => 'Lidl', 'type' => PurchaseChannel::IN_STORE->value, 'country' => CountryCode::GERMANY->value, 'display_order' => 3],
+            ['name' => 'BAUHAUS', 'type' => PurchaseChannel::IN_STORE->value, 'country' => CountryCode::GERMANY->value, 'display_order' => 4],
+            ['name' => 'Edeka', 'type' => PurchaseChannel::IN_STORE->value, 'country' => CountryCode::GERMANY->value, 'display_order' => 5],
+            ['name' => 'Fahrschule Altona', 'type' => PurchaseChannel::IN_STORE->value, 'country' => CountryCode::GERMANY->value, 'display_order' => 6],
+            ['name' => 'IKEA', 'type' => PurchaseChannel::IN_STORE->value, 'country' => CountryCode::GERMANY->value, 'display_order' => 7],
+            ['name' => 'OBI', 'type' => PurchaseChannel::IN_STORE->value, 'country' => CountryCode::GERMANY->value, 'display_order' => 8],
+            ['name' => 'A.T.U.', 'type' => PurchaseChannel::IN_STORE->value, 'country' => CountryCode::GERMANY->value, 'display_order' => 9],
+            ['name' => 'easyApotheke', 'type' => PurchaseChannel::IN_STORE->value, 'country' => CountryCode::GERMANY->value, 'display_order' => 10],
+            ['name' => 'Apotheke a.d. Friedenseiche Nikolaus Wendel', 'type' => PurchaseChannel::IN_STORE->value, 'country' => CountryCode::GERMANY->value, 'display_order' => 11],
+            ['name' => 'ROHLFS BÄCKEREI KONDITOREI GmbH', 'type' => PurchaseChannel::IN_STORE->value, 'country' => CountryCode::GERMANY->value, 'display_order' => 12],
         ];
 
         $shops = array_map(function ($shop) use ($timestamp) {
             return array_merge([
-                'type' => 'in_store',
-                'country' => 'Germany',
+                'type' => PurchaseChannel::IN_STORE->value,
+                'country' => CountryCode::GERMANY->value,
                 'display_order' => 0,
                 'is_active' => true,
             ], $shop, [
@@ -44,6 +46,10 @@ class ShopSeeder extends Seeder
             ]);
         }, $shops);
 
-        DB::table('shops')->insert($shops);
+        DB::table('shops')->upsert(
+            $shops,
+            ['slug'],
+            ['name', 'type', 'country', 'display_order', 'is_active', 'updated_at']
+        );
     }
 }
