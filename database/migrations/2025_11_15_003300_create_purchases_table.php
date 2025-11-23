@@ -13,50 +13,28 @@ return new class extends Migration
     {
         Schema::create('purchases', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('shop_id')->constrained()->onDelete('restrict');
+            $table->foreignId('shop_address_id')->constrained()->onDelete('restrict');
 
-            $table->date('purchase_date')->index()->comment('Calendar date of the purchase');
-            $table->time('purchase_time')->nullable()->comment('Clock time of the purchase (optional)');
+            $table->date('purchase_date');
+            $table->string('currency', 3)->default('EUR');
+            $table->enum('status', ['draft', 'confirmed', 'cancelled'])->default('confirmed');
 
-            $table->foreignId('currency_id')
-                ->constrained('currencies')
-                ->cascadeOnUpdate()
-                ->restrictOnDelete()
-                ->comment('Currency used for this purchase');
+            $table->unsignedInteger('subtotal')->default(0)->comment('Subtotal in cents');
+            $table->unsignedInteger('tax_amount')->default(0)->comment('Tax amount in cents');
+            $table->unsignedInteger('total_amount')->default(0)->comment('Total amount in cents');
 
-            $table->foreignId('payment_method_id')
-                ->constrained('payment_methods')
-                ->cascadeOnUpdate()
-                ->restrictOnDelete()
-                ->comment('Payment method used for this purchase');
-
-            $table->foreignId('shop_id')
-                ->nullable()
-                ->constrained('shops')
-                ->cascadeOnUpdate()
-                ->nullOnDelete()
-                ->comment('Shop where purchase was made (nullable for online-only or future payees)');
-
-            $table->foreignId('shop_address_id')
-                ->nullable()
-                ->constrained('shop_addresses')
-                ->cascadeOnUpdate()
-                ->nullOnDelete()
-                ->comment('Specific shop location (nullable for online purchases)');
-
-            $table->string('receipt_number', 100)->nullable()->comment('Optional receipt or invoice identifier');
-
-            $table->decimal('subtotal_net', 12, 2)->default(0)->comment('Sum of line totals before VAT');
-            $table->decimal('total_vat', 12, 2)->default(0)->comment('Total VAT collected for this purchase');
-            $table->decimal('total_gross', 12, 2)->default(0)->comment('Total amount paid (net + VAT)');
-
-            $table->string('vat_summary', 255)->nullable()->comment('Serialized summary of VAT rates applied (e.g., "19%: 12.34; 7%: 4.56")');
-
-            $table->text('notes')->nullable()->comment('Optional free-form notes about the purchase');
+            $table->text('notes')->nullable();
+            $table->string('receipt_number')->nullable();
 
             $table->timestamps();
+            $table->softDeletes();
 
+            $table->index('purchase_date');
+            $table->index('status');
             $table->index(['shop_id', 'purchase_date']);
-            $table->index(['currency_id', 'purchase_date']);
+            $table->unique(['shop_id', 'receipt_number']);
         });
     }
 
