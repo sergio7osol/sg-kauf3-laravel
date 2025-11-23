@@ -7,9 +7,11 @@ use App\DTO\Shop\ShopData;
 use App\Enums\CountryCode;
 use App\Enums\PurchaseChannel;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreShopRequest;
 use App\Models\Shop;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ShopController extends Controller
@@ -56,9 +58,30 @@ class ShopController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreShopRequest $request): JsonResponse
     {
-        //
+        $data = $request->validated();
+
+        $slug = $this->generateUniqueSlug(
+            name: $data['name'],
+            providedSlug: $data['slug'] ?? null,
+        );
+
+        $nextOrder = Shop::max('display_order');
+        $displayOrder = $data['display_order'] ?? (($nextOrder ?? -1) + 1);
+
+        $shop = Shop::create([
+            'name' => $data['name'],
+            'slug' => $slug,
+            'type' => $data['type'],
+            'country' => $data['country'],
+            'display_order' => $displayOrder,
+            'is_active' => $data['is_active'] ?? true,
+        ]);
+
+        return response()->json([
+            'data' => $this->transformShop($shop),
+        ], 201);
     }
 
     /**
@@ -99,18 +122,19 @@ class ShopController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Generate a unique slug using the provided name/slug pair.
      */
-    public function update(Request $request, string $id)
+    protected function generateUniqueSlug(string $name, ?string $providedSlug = null): string
     {
-        //
-    }
+        $base = $providedSlug ?: Str::slug($name);
+        $slug = $base;
+        $suffix = 2;
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        while (Shop::where('slug', $slug)->exists()) {
+            $slug = $base . '-' . $suffix;
+            $suffix++;
+        }
+
+        return $slug;
     }
 }

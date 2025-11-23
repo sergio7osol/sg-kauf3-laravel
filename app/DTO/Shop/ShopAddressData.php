@@ -41,18 +41,4 @@ readonly class ShopAddressData
             'isActive' => $this->isActive,
         ];
     }
-
-    /**
-     * Get legacy format compatible with old frontend Address type
-     */
-    public function toLegacyFormat(): array
-    {
-        return [
-            'country' => $this->country->value,
-            'index' => $this->postalCode,
-            'city' => $this->city,
-            'street' => $this->street,
-            'houseNumber' => $this->houseNumber,
-        ];
-    }
 }

@@ -9,10 +9,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('shops')->group(function () {
+Route::prefix('shops')->middleware('auth:sanctum')->group(function () {
     Route::get('/', [ShopController::class, 'index']);
     Route::get('/{shop}', [ShopController::class, 'show']);
-})->middleware('auth:sanctum');
+    Route::post('/', [ShopController::class, 'store']);
+});
 
 Route::middleware('auth:sanctum')->resource('/links', Links::class );
 
