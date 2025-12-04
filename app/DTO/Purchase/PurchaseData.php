@@ -2,6 +2,10 @@
 
 namespace App\DTO\Purchase;
 
+use App\DTO\Shop\ShopData;
+use App\DTO\Shop\ShopAddressData;
+use App\DTO\UserPaymentMethodData;
+
 /**
  * Purchase DTO - represents a complete purchase transaction
  */
@@ -15,6 +19,7 @@ readonly class PurchaseData
         public int $userId,
         public int $shopId,
         public int $shopAddressId,
+        public ?int $userPaymentMethodId,
         public string $purchaseDate,
         public string $currency,
         public string $status,
@@ -24,6 +29,9 @@ readonly class PurchaseData
         public ?string $notes,
         public ?string $receiptNumber,
         public array $lines = [],
+        public ?ShopData $shop = null,
+        public ?ShopAddressData $shopAddress = null,
+        public ?UserPaymentMethodData $userPaymentMethod = null,
     ) {}
 
     /**
@@ -31,11 +39,12 @@ readonly class PurchaseData
      */
     public function toArray(): array
     {
-        return [
+        $data = [
             'id' => $this->id,
             'userId' => $this->userId,
             'shopId' => $this->shopId,
             'shopAddressId' => $this->shopAddressId,
+            'userPaymentMethodId' => $this->userPaymentMethodId,
             'purchaseDate' => $this->purchaseDate,
             'currency' => $this->currency,
             'status' => $this->status,
@@ -46,5 +55,22 @@ readonly class PurchaseData
             'receiptNumber' => $this->receiptNumber,
             'lines' => array_map(fn($line) => $line->toArray(), $this->lines),
         ];
+
+        // Include shop relation if loaded
+        if ($this->shop !== null) {
+            $data['shop'] = $this->shop->toArray();
+        }
+
+        // Include shopAddress relation if loaded
+        if ($this->shopAddress !== null) {
+            $data['shopAddress'] = $this->shopAddress->toArray();
+        }
+
+        // Include userPaymentMethod relation if loaded
+        if ($this->userPaymentMethod !== null) {
+            $data['userPaymentMethod'] = $this->userPaymentMethod->toArray();
+        }
+
+        return $data;
     }
 }

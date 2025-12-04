@@ -16,6 +16,7 @@ class Purchase extends Model
         'user_id',
         'shop_id',
         'shop_address_id',
+        'user_payment_method_id',
         'purchase_date',
         'currency',
         'status',
@@ -52,6 +53,11 @@ class Purchase extends Model
         return $this->belongsTo(ShopAddress::class);
     }
 
+    public function userPaymentMethod(): BelongsTo
+    {
+        return $this->belongsTo(UserPaymentMethod::class);
+    }
+
     public function lines(): HasMany
     {
         return $this->hasMany(PurchaseLine::class)->orderBy('line_number');
@@ -80,11 +86,18 @@ class Purchase extends Model
             $lines = $this->lines->map(fn($line) => $line->toData())->all();
         }
 
+        $shop = $this->relationLoaded('shop') ? $this->shop->toData() : null;
+        $shopAddress = $this->relationLoaded('shopAddress') ? $this->shopAddress->toData() : null;
+        $userPaymentMethod = $this->relationLoaded('userPaymentMethod') && $this->userPaymentMethod
+            ? $this->userPaymentMethod->toData()
+            : null;
+
         return new \App\DTO\Purchase\PurchaseData(
             id: $this->id,
             userId: $this->user_id,
             shopId: $this->shop_id,
             shopAddressId: $this->shop_address_id,
+            userPaymentMethodId: $this->user_payment_method_id,
             purchaseDate: $this->purchase_date->toDateString(),
             currency: $this->currency,
             status: $this->status,
@@ -94,6 +107,9 @@ class Purchase extends Model
             notes: $this->notes,
             receiptNumber: $this->receipt_number,
             lines: $lines,
+            shop: $shop,
+            shopAddress: $shopAddress,
+            userPaymentMethod: $userPaymentMethod,
         );
     }
 }
