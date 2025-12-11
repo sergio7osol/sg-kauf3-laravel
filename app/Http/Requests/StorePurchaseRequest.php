@@ -33,6 +33,7 @@ class StorePurchaseRequest extends FormRequest
             'lines.*.unit_price' => ['required', 'integer', 'min:0'],
             'lines.*.tax_rate' => ['required', 'numeric', 'min:0', 'max:100'],
             'lines.*.discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'lines.*.discount_amount' => ['nullable', 'integer', 'min:0'],
             'lines.*.notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
@@ -82,6 +83,21 @@ class StorePurchaseRequest extends FormRequest
                 }
             }
 
+            // Validate discount fields are mutually exclusive
+            if ($this->has('lines')) {
+                foreach ($this->lines as $index => $line) {
+                    $hasPercent = isset($line['discount_percent']) && $line['discount_percent'] > 0;
+                    $hasAmount = isset($line['discount_amount']) && $line['discount_amount'] > 0;
+                    
+                    if ($hasPercent && $hasAmount) {
+                        $validator->errors()->add(
+                            "lines.{$index}.discount_amount",
+                            'Cannot specify both discount_percent and discount_amount. Use one or the other.'
+                        );
+                    }
+                }
+            }
+
             // Ensure user_payment_method belongs to the authenticated user
             if ($this->user_payment_method_id) {
                 $methodBelongsToUser = \App\Models\UserPaymentMethod::where('id', $this->user_payment_method_id)
@@ -111,7 +127,9 @@ class StorePurchaseRequest extends FormRequest
             'lines.*.quantity.required' => 'Line item quantity is required.',
             'lines.*.quantity.min' => 'Quantity must be greater than zero.',
             'lines.*.unit_price.required' => 'Unit price is required.',
+            'lines.*.unit_price.min' => 'Unit price must be at least 0.',
             'lines.*.tax_rate.required' => 'Tax rate is required.',
+            'lines.*.discount_amount.min' => 'Discount amount must be at least 0.',
         ];
     }
 }

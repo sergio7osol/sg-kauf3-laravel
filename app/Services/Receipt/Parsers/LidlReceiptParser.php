@@ -126,13 +126,21 @@ class LidlReceiptParser implements ReceiptParserInterface
     {
         $result = ['display' => null, 'street' => null, 'postalCode' => null, 'city' => null];
 
+        // Lidl receipts have the address near the top (within first ~20 lines)
+        // Limit search to header area to avoid matching addresses from coupons/ads
+        $lines = explode("\n", $text);
+        $headerText = implode("\n", array_slice($lines, 0, 20));
+
         // Look for German address pattern: Street + number, then postal code + city
         // Example: "Kieler Straße 595" followed by "22525 Hamburg"
-        if (preg_match('/([A-Za-zäöüÄÖÜß\s\-\.]+(?:straße|strasse|str\.|weg|platz|allee)\s*\d+[a-z]?)/i', $text, $streetMatch)) {
+        // Includes common German street suffixes: straße, weg, platz, allee, chaussee, damm, ring, ufer, etc.
+        $streetPattern = '/([A-Za-zäöüÄÖÜß\s\-\.]+(?:straße|strasse|str\.|weg|platz|allee|chaussee|damm|ring|ufer|steig|gasse|pfad|promenade|kamp|stieg|bogen|hof|markt)\s*\d+[a-z]?)/i';
+        
+        if (preg_match($streetPattern, $headerText, $streetMatch)) {
             $result['street'] = trim($streetMatch[1]);
         }
 
-        if (preg_match('/\b(\d{5})\s+([A-Za-zäöüÄÖÜß\-]+)\b/', $text, $cityMatch)) {
+        if (preg_match('/\b(\d{5})\s+([A-Za-zäöüÄÖÜß\-]+)\b/', $headerText, $cityMatch)) {
             $result['postalCode'] = $cityMatch[1];
             $result['city'] = $cityMatch[2];
         }

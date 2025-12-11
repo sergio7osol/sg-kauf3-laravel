@@ -6,6 +6,7 @@ use App\Http\Controllers\Links;
 use App\Http\Controllers\Api\ShopController;
 use App\Http\Controllers\Api\PurchaseController;
 use App\Http\Controllers\Api\UserPaymentMethodController;
+use App\Http\Controllers\Api\ReceiptController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -34,6 +35,11 @@ Route::prefix('user-payment-methods')->middleware('auth:sanctum')->group(functio
     Route::put('/{user_payment_method}', [UserPaymentMethodController::class, 'update']);
     Route::patch('/{user_payment_method}', [UserPaymentMethodController::class, 'update']);
     Route::delete('/{user_payment_method}', [UserPaymentMethodController::class, 'destroy']);
+});
+
+Route::prefix('receipts')->middleware('auth:sanctum')->group(function () {
+    Route::post('/parse', [ReceiptController::class, 'parse']);
+    Route::get('/supported-shops', [ReceiptController::class, 'supportedShops']);
 });
 
 Route::middleware('auth:sanctum')->resource('/links', Links::class );

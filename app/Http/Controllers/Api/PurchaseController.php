@@ -149,6 +149,7 @@ class PurchaseController extends Controller
                         'unit_price' => $lineData['unit_price'],
                         'tax_rate' => $lineData['tax_rate'],
                         'discount_percent' => $lineData['discount_percent'] ?? null,
+                        'discount_amount' => $lineData['discount_amount'] ?? null,
                         'notes' => $lineData['notes'] ?? null,
                     ]);
                 }

@@ -12,6 +12,21 @@ class Purchase extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /**
+     * Clear receipt_number when soft-deleting to free up the unique constraint.
+     * This allows re-importing the same receipt after accidental deletion.
+     */
+    protected static function booted()
+    {
+        static::deleting(function (Purchase $purchase) {
+            // Only clear on soft-delete, not force-delete
+            if (!$purchase->isForceDeleting()) {
+                $purchase->receipt_number = null;
+                $purchase->saveQuietly(); // Avoid triggering other events
+            }
+        });
+    }
+
     protected $fillable = [
         'user_id',
         'shop_id',
