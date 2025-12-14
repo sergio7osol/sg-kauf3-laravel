@@ -54,6 +54,7 @@ class ReceiptController extends Controller
                 'warnings' => $result->warnings,
                 'error' => $result->error,
                 'confidence' => $result->confidence,
+                'field_warnings' => $result->success ? $this->computeFieldWarnings($result) : null,
             ];
 
             if ($includeDebug) {
@@ -126,6 +127,83 @@ class ReceiptController extends Controller
             'event_summary' => $eventCounts,
             'events' => array_slice($debugLog, 0, 100), // Limit to first 100 events
         ];
+    }
+
+    /**
+     * Compute per-field confidence and warnings for UI highlighting.
+     * Returns field_warnings object with confidence (high|medium|low) and optional warning message.
+     */
+    private function computeFieldWarnings($result): array
+    {
+        $fieldWarnings = [];
+
+        // shop_id: high if matched, medium if name detected but not in DB, low if no name
+        if ($result->shopId !== null) {
+            $fieldWarnings['shop_id'] = ['confidence' => 'high', 'warning' => null];
+        } elseif ($result->shopName !== null) {
+            $fieldWarnings['shop_id'] = ['confidence' => 'medium', 'warning' => 'Shop detected but not found in database'];
+        } else {
+            $fieldWarnings['shop_id'] = ['confidence' => 'low', 'warning' => 'Could not detect shop'];
+        }
+
+        // shop_address_id: high if matched, medium if address detected but not in DB, low if no address
+        if ($result->addressId !== null) {
+            $fieldWarnings['shop_address_id'] = ['confidence' => 'high', 'warning' => null];
+        } elseif ($result->addressDisplay !== null) {
+            $fieldWarnings['shop_address_id'] = ['confidence' => 'medium', 'warning' => 'Address detected but not found in database'];
+        } else {
+            $fieldWarnings['shop_address_id'] = ['confidence' => 'low', 'warning' => 'Could not detect address'];
+        }
+
+        // purchase_date: high if extracted, low if null
+        if ($result->date !== null) {
+            $fieldWarnings['purchase_date'] = ['confidence' => 'high', 'warning' => null];
+        } else {
+            $fieldWarnings['purchase_date'] = ['confidence' => 'low', 'warning' => 'Could not extract purchase date'];
+        }
+
+        // purchase_time: high if extracted, low if null
+        if ($result->time !== null) {
+            $fieldWarnings['purchase_time'] = ['confidence' => 'high', 'warning' => null];
+        } else {
+            $fieldWarnings['purchase_time'] = ['confidence' => 'low', 'warning' => 'Could not extract purchase time'];
+        }
+
+        // subtotal: high if > 0, medium if 0 (might be computed/missing)
+        if ($result->subtotal > 0) {
+            $fieldWarnings['subtotal'] = ['confidence' => 'high', 'warning' => null];
+        } else {
+            $fieldWarnings['subtotal'] = ['confidence' => 'medium', 'warning' => 'Subtotal is zero or not detected'];
+        }
+
+        // total: high if > 0, low if 0
+        if ($result->total > 0) {
+            $fieldWarnings['total'] = ['confidence' => 'high', 'warning' => null];
+        } else {
+            $fieldWarnings['total'] = ['confidence' => 'low', 'warning' => 'Total is zero or not detected'];
+        }
+
+        // items: high if not empty and most have high confidence, medium if some have warnings, low if empty
+        $items = $result->items;
+        if (empty($items)) {
+            $fieldWarnings['items'] = ['confidence' => 'low', 'warning' => 'No items detected'];
+        } else {
+            $lowConfidenceCount = 0;
+            foreach ($items as $item) {
+                if ($item->confidence === 'low' || $item->warning !== null) {
+                    $lowConfidenceCount++;
+                }
+            }
+            if ($lowConfidenceCount === 0) {
+                $fieldWarnings['items'] = ['confidence' => 'high', 'warning' => null];
+            } elseif ($lowConfidenceCount < count($items) / 2) {
+                $fieldWarnings['items'] = ['confidence' => 'medium', 'warning' => "$lowConfidenceCount item(s) have warnings"];
+            } else {
+                $fieldWarnings['items'] = ['confidence' => 'low', 'warning' => 'Many items have low confidence'];
+            }
+        }
+
+        return $fieldWarnings;
     }
 
     /**

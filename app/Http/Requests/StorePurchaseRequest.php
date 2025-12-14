@@ -12,6 +12,13 @@ class StorePurchaseRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('purchase_time') && $this->purchase_time === '') {
+            $this->merge(['purchase_time' => null]);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -19,6 +26,7 @@ class StorePurchaseRequest extends FormRequest
             'shop_address_id' => ['required', 'integer', 'exists:shop_addresses,id'],
             'user_payment_method_id' => ['nullable', 'integer', 'exists:user_payment_methods,id'],
             'purchase_date' => ['required', 'date', 'before_or_equal:today'],
+            'purchase_time' => ['nullable', 'regex:/^\d{2}:\d{2}(:\d{2})?$/'],
             'currency' => ['nullable', 'string', 'size:3'],
             'status' => ['nullable', Rule::in(['draft', 'confirmed', 'cancelled'])],
             'notes' => ['nullable', 'string', 'max:5000'],
@@ -121,6 +129,7 @@ class StorePurchaseRequest extends FormRequest
             'shop_address_id.required' => 'Please select a shop address.',
             'purchase_date.required' => 'Purchase date is required.',
             'purchase_date.before_or_equal' => 'Purchase date cannot be in the future.',
+            'purchase_time.regex' => 'Purchase time must be in HH:MM or HH:MM:SS format.',
             'lines.required' => 'At least one line item is required.',
             'lines.min' => 'At least one line item is required.',
             'lines.*.description.required' => 'Line item description is required.',

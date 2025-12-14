@@ -128,6 +128,7 @@ class PurchaseController extends Controller
                     'shop_address_id' => $validated['shop_address_id'],
                     'user_payment_method_id' => $validated['user_payment_method_id'] ?? null,
                     'purchase_date' => $validated['purchase_date'],
+                    'purchase_time' => $validated['purchase_time'] ?? null,
                     'currency' => $validated['currency'] ?? 'EUR',
                     'status' => $validated['status'] ?? 'confirmed',
                     'notes' => $validated['notes'] ?? null,
@@ -200,6 +201,7 @@ class PurchaseController extends Controller
                     'shop_address_id',
                     'user_payment_method_id',
                     'purchase_date',
+                    'purchase_time',
                     'currency',
                     'status',
                     'notes',
@@ -233,6 +235,7 @@ class PurchaseController extends Controller
                             'unit_price' => $lineData['unit_price'],
                             'tax_rate' => $lineData['tax_rate'],
                             'discount_percent' => $lineData['discount_percent'] ?? null,
+                            'discount_amount' => $lineData['discount_amount'] ?? null,
                             'notes' => $lineData['notes'] ?? null,
                         ]);
                     }

@@ -12,6 +12,13 @@ class UpdatePurchaseRequest extends FormRequest
         return true; // Authorization handled in controller
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('purchase_time') && $this->purchase_time === '') {
+            $this->merge(['purchase_time' => null]);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -20,6 +27,7 @@ class UpdatePurchaseRequest extends FormRequest
             'shop_address_id' => ['sometimes', 'required', 'integer', 'exists:shop_addresses,id'],
             'user_payment_method_id' => ['nullable', 'integer', 'exists:user_payment_methods,id'],
             'purchase_date' => ['sometimes', 'required', 'date', 'before_or_equal:today'],
+            'purchase_time' => ['nullable', 'regex:/^\d{2}:\d{2}(:\d{2})?$/'],
             'currency' => ['sometimes', 'string', 'size:3'],
             'status' => ['sometimes', Rule::in(['draft', 'confirmed', 'cancelled'])],
             'notes' => ['nullable', 'string', 'max:5000'],
@@ -34,6 +42,7 @@ class UpdatePurchaseRequest extends FormRequest
             'lines.*.unit_price' => ['required_with:lines', 'integer', 'min:0'],
             'lines.*.tax_rate' => ['required_with:lines', 'numeric', 'min:0', 'max:100'],
             'lines.*.discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'lines.*.discount_amount' => ['nullable', 'integer', 'min:0'],
             'lines.*.notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
@@ -115,6 +124,7 @@ class UpdatePurchaseRequest extends FormRequest
             'shop_id.exists' => 'The selected shop does not exist.',
             'shop_address_id.exists' => 'The selected address does not exist.',
             'purchase_date.before_or_equal' => 'Purchase date cannot be in the future.',
+            'purchase_time.regex' => 'Purchase time must be in HH:MM or HH:MM:SS format.',
             'lines.min' => 'At least one line item is required when updating lines.',
             'lines.*.description.required_with' => 'Line item description is required.',
             'lines.*.quantity.required_with' => 'Line item quantity is required.',

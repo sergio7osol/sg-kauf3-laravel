@@ -6,6 +6,7 @@ use App\Models\Shop;
 use App\Models\ShopAddress;
 use App\Services\Receipt\DTO\ExtractionResult;
 use App\Services\Receipt\DTO\ParsedReceipt;
+use App\Services\Receipt\Parsers\DecathlonReceiptParser;
 use App\Services\Receipt\Parsers\DmReceiptParser;
 use App\Services\Receipt\Parsers\LidlReceiptParser;
 
@@ -24,6 +25,7 @@ class ReceiptImportService
         $this->parsers = [
             new LidlReceiptParser(),
             new DmReceiptParser(),
+            new DecathlonReceiptParser(),
         ];
     }
 
