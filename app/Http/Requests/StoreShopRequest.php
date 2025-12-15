@@ -21,8 +21,8 @@ class StoreShopRequest extends FormRequest
             'slug' => ['nullable', 'string', 'max:255', 'unique:shops,slug'],
             'type' => ['required', Rule::enum(PurchaseChannel::class)],
             'country' => ['required', Rule::enum(CountryCode::class)],
-            'display_order' => ['nullable', 'integer', 'min:0'],
-            'is_active' => ['nullable', 'boolean'],
+            'displayOrder' => ['nullable', 'integer', 'min:0'],
+            'isActive' => ['nullable', 'boolean'],
         ];
     }
 }

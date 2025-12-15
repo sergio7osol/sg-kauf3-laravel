@@ -29,8 +29,8 @@ class StoreUserPaymentMethodRequest extends FormRequest
                     ->where('user_id', $this->user()->id),
             ],
             'notes' => ['nullable', 'string', 'max:1000'],
-            'is_active' => ['nullable', 'boolean'],
-            'payment_method_id' => [
+            'isActive' => ['nullable', 'boolean'],
+            'paymentMethodId' => [
                 'nullable',
                 'integer',
                 Rule::exists('payment_methods', 'id'),
@@ -46,7 +46,7 @@ class StoreUserPaymentMethodRequest extends FormRequest
         return [
             'name.required' => 'Payment method name is required.',
             'name.unique' => 'You already have a payment method with this name.',
-            'payment_method_id.exists' => 'Selected payment method does not exist.',
+            'paymentMethodId.exists' => 'Selected payment method does not exist.',
         ];
     }
 }
