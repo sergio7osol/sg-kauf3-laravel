@@ -33,8 +33,8 @@ class UpdateUserPaymentMethodRequest extends FormRequest
                     ->ignore($methodId),
             ],
             'notes' => ['nullable', 'string', 'max:1000'],
-            'is_active' => ['nullable', 'boolean'],
-            'payment_method_id' => [
+            'isActive' => ['nullable', 'boolean'],
+            'paymentMethodId' => [
                 'nullable',
                 'integer',
                 Rule::exists('payment_methods', 'id'),
@@ -49,7 +49,7 @@ class UpdateUserPaymentMethodRequest extends FormRequest
     {
         return [
             'name.unique' => 'You already have a payment method with this name.',
-            'payment_method_id.exists' => 'Selected payment method does not exist.',
+            'paymentMethodId.exists' => 'Selected payment method does not exist.',
         ];
     }
 }

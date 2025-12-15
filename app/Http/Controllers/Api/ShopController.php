@@ -9,6 +9,7 @@ use App\Enums\PurchaseChannel;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreShopRequest;
 use App\Models\Shop;
+use App\Support\CaseConverter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -60,7 +61,8 @@ class ShopController extends Controller
      */
     public function store(StoreShopRequest $request): JsonResponse
     {
-        $data = $request->validated();
+        $validated = $request->validated();
+        $data = CaseConverter::toSnakeCase($validated);
 
         $slug = $this->generateUniqueSlug(
             name: $data['name'],

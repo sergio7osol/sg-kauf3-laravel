@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserPaymentMethodRequest;
 use App\Http\Requests\UpdateUserPaymentMethodRequest;
 use App\Models\UserPaymentMethod;
+use App\Support\CaseConverter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -37,13 +38,14 @@ class UserPaymentMethodController extends Controller
     public function store(StoreUserPaymentMethodRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $data = CaseConverter::toSnakeCase($validated);
 
         $method = UserPaymentMethod::create([
             'user_id' => $request->user()->id,
-            'name' => $validated['name'],
-            'notes' => $validated['notes'] ?? null,
-            'is_active' => $validated['is_active'] ?? true,
-            'payment_method_id' => $validated['payment_method_id'] ?? null,
+            'name' => $data['name'],
+            'notes' => $data['notes'] ?? null,
+            'is_active' => $data['is_active'] ?? true,
+            'payment_method_id' => $data['payment_method_id'] ?? null,
         ]);
 
         return response()->json([
@@ -81,8 +83,9 @@ class UserPaymentMethodController extends Controller
         }
 
         $validated = $request->validated();
+        $data = CaseConverter::toSnakeCase($validated);
 
-        $userPaymentMethod->update($validated);
+        $userPaymentMethod->update($data);
 
         return response()->json([
             'data' => $userPaymentMethod->fresh()->toData()->toArray(),

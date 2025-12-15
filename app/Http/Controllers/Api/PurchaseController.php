@@ -7,6 +7,7 @@ use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
 use App\Models\Purchase;
 use App\Models\PurchaseLine;
+use App\Support\CaseConverter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -39,23 +40,22 @@ class PurchaseController extends Controller
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'shop_id' => ['nullable', 'integer', 'exists:shops,id'],
-            'date_from' => ['nullable', 'date'],
-            'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
+            'shopId' => ['nullable', 'integer', 'exists:shops,id'],
+            'dateFrom' => ['nullable', 'date'],
+            'dateTo' => ['nullable', 'date', 'after_or_equal:dateFrom'],
             'status' => ['nullable', Rule::in(['draft', 'confirmed', 'cancelled'])],
-            'include_lines' => ['nullable', 'boolean'],
             'includeLines' => ['nullable', 'boolean'],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
-        $includeLines = (bool) (($validated['include_lines'] ?? $validated['includeLines'] ?? false));
-        $perPage = $validated['per_page'] ?? 15;
+        $includeLines = (bool) ($validated['includeLines'] ?? false);
+        $perPage = $validated['perPage'] ?? 15;
 
         $query = Purchase::query()
             ->where('user_id', $request->user()->id)
-            ->when(isset($validated['shop_id']), fn ($q) => $q->where('shop_id', $validated['shop_id']))
-            ->when(isset($validated['date_from']), fn ($q) => $q->where('purchase_date', '>=', $validated['date_from']))
-            ->when(isset($validated['date_to']), fn ($q) => $q->where('purchase_date', '<=', $validated['date_to']))
+            ->when(isset($validated['shopId']), fn ($q) => $q->where('shop_id', $validated['shopId']))
+            ->when(isset($validated['dateFrom']), fn ($q) => $q->where('purchase_date', '>=', $validated['dateFrom']))
+            ->when(isset($validated['dateTo']), fn ($q) => $q->where('purchase_date', '<=', $validated['dateTo']))
             ->when(isset($validated['status']), fn ($q) => $q->where('status', $validated['status']))
             ->orderBy('purchase_date', 'desc')
             ->orderBy('id', 'desc');
@@ -76,10 +76,10 @@ class PurchaseController extends Controller
         return response()->json([
             'data' => $data,
             'meta' => [
-                'current_page' => $purchases->currentPage(),
+                'currentPage' => $purchases->currentPage(),
                 'from' => $purchases->firstItem(),
-                'last_page' => $purchases->lastPage(),
-                'per_page' => $purchases->perPage(),
+                'lastPage' => $purchases->lastPage(),
+                'perPage' => $purchases->perPage(),
                 'to' => $purchases->lastItem(),
                 'total' => $purchases->total(),
             ],
@@ -120,19 +120,20 @@ class PurchaseController extends Controller
         try {
             $purchase = DB::transaction(function () use ($request) {
                 $validated = $request->validated();
+                $data = CaseConverter::toSnakeCase($validated);
 
                 // Create the purchase (totals will be recalculated after lines are saved)
                 $purchase = Purchase::create([
                     'user_id' => $request->user()->id,
-                    'shop_id' => $validated['shop_id'],
-                    'shop_address_id' => $validated['shop_address_id'],
-                    'user_payment_method_id' => $validated['user_payment_method_id'] ?? null,
-                    'purchase_date' => $validated['purchase_date'],
-                    'purchase_time' => $validated['purchase_time'] ?? null,
-                    'currency' => $validated['currency'] ?? 'EUR',
-                    'status' => $validated['status'] ?? 'confirmed',
-                    'notes' => $validated['notes'] ?? null,
-                    'receipt_number' => $validated['receipt_number'] ?? null,
+                    'shop_id' => $data['shop_id'],
+                    'shop_address_id' => $data['shop_address_id'],
+                    'user_payment_method_id' => $data['user_payment_method_id'] ?? null,
+                    'purchase_date' => $data['purchase_date'],
+                    'purchase_time' => $data['purchase_time'] ?? null,
+                    'currency' => $data['currency'] ?? 'EUR',
+                    'status' => $data['status'] ?? 'confirmed',
+                    'notes' => $data['notes'] ?? null,
+                    'receipt_number' => $data['receipt_number'] ?? null,
                     'subtotal' => 0,
                     'tax_amount' => 0,
                     'total_amount' => 0,
@@ -140,7 +141,7 @@ class PurchaseController extends Controller
 
                 // Create each line item
                 // The PurchaseLine model's booted() hook will auto-calculate amounts
-                foreach ($validated['lines'] as $lineData) {
+                foreach ($data['lines'] as $lineData) {
                     PurchaseLine::create([
                         'purchase_id' => $purchase->id,
                         'line_number' => $lineData['line_number'],
@@ -194,6 +195,7 @@ class PurchaseController extends Controller
         try {
             $purchase = DB::transaction(function () use ($request, $purchase) {
                 $validated = $request->validated();
+                $data = CaseConverter::toSnakeCase($validated);
 
                 // Update header fields (only those provided)
                 $headerFields = [
@@ -210,8 +212,8 @@ class PurchaseController extends Controller
 
                 $updateData = [];
                 foreach ($headerFields as $field) {
-                    if (array_key_exists($field, $validated)) {
-                        $updateData[$field] = $validated[$field];
+                    if (array_key_exists($field, $data)) {
+                        $updateData[$field] = $data[$field];
                     }
                 }
 
@@ -220,12 +222,12 @@ class PurchaseController extends Controller
                 }
 
                 // If lines are provided, replace all existing lines
-                if (isset($validated['lines']) && is_array($validated['lines'])) {
+                if (isset($data['lines']) && is_array($data['lines'])) {
                     // Delete existing lines
                     $purchase->lines()->delete();
 
                     // Create new lines
-                    foreach ($validated['lines'] as $lineData) {
+                    foreach ($data['lines'] as $lineData) {
                         PurchaseLine::create([
                             'purchase_id' => $purchase->id,
                             'line_number' => $lineData['line_number'],

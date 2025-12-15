@@ -54,7 +54,7 @@ class ReceiptController extends Controller
                 'warnings' => $result->warnings,
                 'error' => $result->error,
                 'confidence' => $result->confidence,
-                'field_warnings' => $result->success ? $this->computeFieldWarnings($result) : null,
+                'fieldWarnings' => $result->success ? $this->computeFieldWarnings($result) : null,
             ];
 
             if ($includeDebug) {
@@ -85,8 +85,8 @@ class ReceiptController extends Controller
                 'display' => $result->addressDisplay,
                 'id' => $result->addressId,
             ],
-            'purchase_date' => $result->date,
-            'purchase_time' => $result->time,
+            'purchaseDate' => $result->date,
+            'purchaseTime' => $result->time,
             'currency' => $result->currency,
             'subtotal' => $result->subtotal,
             'total' => $result->total,
@@ -94,18 +94,18 @@ class ReceiptController extends Controller
                 'name' => $item->name,
                 'quantity' => $item->quantity,
                 'unit' => $item->unit,
-                'unit_price' => $item->unitPrice,
-                'total_price' => $item->totalPrice,
-                'is_discount' => $item->isDiscount,
+                'unitPrice' => $item->unitPrice,
+                'totalPrice' => $item->totalPrice,
+                'isDiscount' => $item->isDiscount,
                 'confidence' => $item->confidence,
                 'warning' => $item->warning,
                 // Submission-ready fields for POST /api/purchases
-                // For discounts: unit_price=0, discount_amount=absolute value in cents
-                // For regular items: unit_price in cents, discount_amount=0
-                'submit_unit_price' => $item->isDiscount
+                // For discounts: unitPrice=0, discountAmount=absolute value in cents
+                // For regular items: unitPrice in cents, discountAmount=0
+                'submitUnitPrice' => $item->isDiscount
                     ? 0
                     : (int) round(abs($item->unitPrice) * 100),
-                'submit_discount_amount' => $item->isDiscount
+                'submitDiscountAmount' => $item->isDiscount
                     ? (int) round(abs($item->totalPrice) * 100)
                     : 0,
             ], $result->items),
@@ -124,7 +124,7 @@ class ReceiptController extends Controller
         }
 
         return [
-            'event_summary' => $eventCounts,
+            'eventSummary' => $eventCounts,
             'events' => array_slice($debugLog, 0, 100), // Limit to first 100 events
         ];
     }
@@ -137,36 +137,36 @@ class ReceiptController extends Controller
     {
         $fieldWarnings = [];
 
-        // shop_id: high if matched, medium if name detected but not in DB, low if no name
+        // shopId: high if matched, medium if name detected but not in DB, low if no name
         if ($result->shopId !== null) {
-            $fieldWarnings['shop_id'] = ['confidence' => 'high', 'warning' => null];
+            $fieldWarnings['shopId'] = ['confidence' => 'high', 'warning' => null];
         } elseif ($result->shopName !== null) {
-            $fieldWarnings['shop_id'] = ['confidence' => 'medium', 'warning' => 'Shop detected but not found in database'];
+            $fieldWarnings['shopId'] = ['confidence' => 'medium', 'warning' => 'Shop detected but not found in database'];
         } else {
-            $fieldWarnings['shop_id'] = ['confidence' => 'low', 'warning' => 'Could not detect shop'];
+            $fieldWarnings['shopId'] = ['confidence' => 'low', 'warning' => 'Could not detect shop'];
         }
 
-        // shop_address_id: high if matched, medium if address detected but not in DB, low if no address
+        // shopAddressId: high if matched, medium if address detected but not in DB, low if no address
         if ($result->addressId !== null) {
-            $fieldWarnings['shop_address_id'] = ['confidence' => 'high', 'warning' => null];
+            $fieldWarnings['shopAddressId'] = ['confidence' => 'high', 'warning' => null];
         } elseif ($result->addressDisplay !== null) {
-            $fieldWarnings['shop_address_id'] = ['confidence' => 'medium', 'warning' => 'Address detected but not found in database'];
+            $fieldWarnings['shopAddressId'] = ['confidence' => 'medium', 'warning' => 'Address detected but not found in database'];
         } else {
-            $fieldWarnings['shop_address_id'] = ['confidence' => 'low', 'warning' => 'Could not detect address'];
+            $fieldWarnings['shopAddressId'] = ['confidence' => 'low', 'warning' => 'Could not detect address'];
         }
 
-        // purchase_date: high if extracted, low if null
+        // purchaseDate: high if extracted, low if null
         if ($result->date !== null) {
-            $fieldWarnings['purchase_date'] = ['confidence' => 'high', 'warning' => null];
+            $fieldWarnings['purchaseDate'] = ['confidence' => 'high', 'warning' => null];
         } else {
-            $fieldWarnings['purchase_date'] = ['confidence' => 'low', 'warning' => 'Could not extract purchase date'];
+            $fieldWarnings['purchaseDate'] = ['confidence' => 'low', 'warning' => 'Could not extract purchase date'];
         }
 
-        // purchase_time: high if extracted, low if null
+        // purchaseTime: high if extracted, low if null
         if ($result->time !== null) {
-            $fieldWarnings['purchase_time'] = ['confidence' => 'high', 'warning' => null];
+            $fieldWarnings['purchaseTime'] = ['confidence' => 'high', 'warning' => null];
         } else {
-            $fieldWarnings['purchase_time'] = ['confidence' => 'low', 'warning' => 'Could not extract purchase time'];
+            $fieldWarnings['purchaseTime'] = ['confidence' => 'low', 'warning' => 'Could not extract purchase time'];
         }
 
         // subtotal: high if > 0, medium if 0 (might be computed/missing)
