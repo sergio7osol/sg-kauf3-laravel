@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\User;
 use App\Http\Controllers\Links;
 use App\Http\Controllers\Api\ShopController;
+use App\Http\Controllers\Api\ShopAddressController;
 use App\Http\Controllers\Api\PurchaseController;
 use App\Http\Controllers\Api\UserPaymentMethodController;
 use App\Http\Controllers\Api\ReceiptController;
@@ -16,6 +17,17 @@ Route::prefix('shops')->middleware('auth:sanctum')->group(function () {
     Route::get('/', [ShopController::class, 'index']);
     Route::get('/{shop}', [ShopController::class, 'show']);
     Route::post('/', [ShopController::class, 'store']);
+
+    // Shop Addresses (nested under shops)
+    Route::prefix('/{shop}/addresses')->group(function () {
+        Route::get('/', [ShopAddressController::class, 'index']);
+        Route::post('/', [ShopAddressController::class, 'store']);
+        Route::get('/{address}', [ShopAddressController::class, 'show']);
+        Route::put('/{address}', [ShopAddressController::class, 'update']);
+        Route::patch('/{address}', [ShopAddressController::class, 'update']);
+        Route::patch('/{address}/set-primary', [ShopAddressController::class, 'setPrimary']);
+        Route::patch('/{address}/toggle-active', [ShopAddressController::class, 'toggleActive']);
+    });
 });
 
 Route::prefix('purchases')->middleware('auth:sanctum')->group(function () {
