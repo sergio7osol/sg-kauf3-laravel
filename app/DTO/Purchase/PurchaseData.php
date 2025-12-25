@@ -13,6 +13,7 @@ readonly class PurchaseData
 {
     /**
      * @param PurchaseLineData[] $lines
+     * @param PurchaseReceiptFileData[] $attachments
      */
     public function __construct(
         public int $id,
@@ -30,6 +31,7 @@ readonly class PurchaseData
         public ?string $notes,
         public ?string $receiptNumber,
         public array $lines = [],
+        public array $attachments = [],
         public ?ShopData $shop = null,
         public ?ShopAddressData $shopAddress = null,
         public ?UserPaymentMethodData $userPaymentMethod = null,
@@ -56,6 +58,7 @@ readonly class PurchaseData
             'notes' => $this->notes,
             'receiptNumber' => $this->receiptNumber,
             'lines' => array_map(fn($line) => $line->toArray(), $this->lines),
+            'attachments' => array_map(fn($attachment) => $attachment->toArray(), $this->attachments),
         ];
 
         // Include shop relation if loaded

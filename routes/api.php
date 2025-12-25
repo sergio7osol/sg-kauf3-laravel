@@ -6,6 +6,7 @@ use App\Http\Controllers\Links;
 use App\Http\Controllers\Api\ShopController;
 use App\Http\Controllers\Api\ShopAddressController;
 use App\Http\Controllers\Api\PurchaseController;
+use App\Http\Controllers\Api\PurchaseReceiptFileController;
 use App\Http\Controllers\Api\UserPaymentMethodController;
 use App\Http\Controllers\Api\ReceiptController;
 
@@ -38,6 +39,10 @@ Route::prefix('purchases')->middleware('auth:sanctum')->group(function () {
     Route::put('/{purchase}', [PurchaseController::class, 'update']);
     Route::patch('/{purchase}', [PurchaseController::class, 'update']);
     Route::delete('/{purchase}', [PurchaseController::class, 'destroy']);
+
+    // Purchase receipt attachments
+    Route::get('/{purchase}/attachments/{attachment}/download', [PurchaseReceiptFileController::class, 'download']);
+    Route::delete('/{purchase}/attachments/{attachment}', [PurchaseReceiptFileController::class, 'destroy']);
 });
 
 Route::prefix('user-payment-methods')->middleware('auth:sanctum')->group(function () {

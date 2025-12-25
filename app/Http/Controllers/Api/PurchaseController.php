@@ -7,6 +7,7 @@ use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
 use App\Models\Purchase;
 use App\Models\PurchaseLine;
+use App\Services\Purchase\PurchaseReceiptStorageService;
 use App\Support\CaseConverter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,9 @@ use Illuminate\Validation\Rule;
 
 class PurchaseController extends Controller
 {
+    public function __construct(
+        private readonly PurchaseReceiptStorageService $receiptStorageService
+    ) {}
     /**
      * Get the date range of all purchases for the authenticated user.
      * Useful for "All Time" chart view without fetching all records.
@@ -61,7 +65,7 @@ class PurchaseController extends Controller
             ->orderBy('id', 'desc');
 
         // Eager-load relationships to avoid N+1
-        $query->with(['shop', 'shopAddress', 'userPaymentMethod']);
+        $query->with(['shop', 'shopAddress', 'userPaymentMethod', 'attachments']);
 
         if ($includeLines) {
             $query->with(['lines' => fn ($relation) => $relation->orderBy('line_number')]);
@@ -104,6 +108,7 @@ class PurchaseController extends Controller
             'shop',
             'shopAddress',
             'userPaymentMethod',
+            'attachments',
         ]);
 
         return response()->json([
@@ -160,11 +165,17 @@ class PurchaseController extends Controller
                 $purchase->refresh();
                 $purchase->recalculateTotals();
 
+                // Handle file attachments if provided
+                if ($request->hasFile('attachments')) {
+                    $files = $request->file('attachments');
+                    $this->receiptStorageService->storeMany($purchase, $files, $request->user()->id);
+                }
+
                 return $purchase;
             });
 
-            // Load lines for response
-            $purchase->load('lines');
+            // Load lines and attachments for response
+            $purchase->load(['lines', 'attachments']);
 
             return response()->json([
                 'data' => $purchase->toData(includeLines: true)->toArray(),
@@ -247,6 +258,12 @@ class PurchaseController extends Controller
                     $purchase->recalculateTotals();
                 }
 
+                // Handle file attachments if provided
+                if ($request->hasFile('attachments')) {
+                    $files = $request->file('attachments');
+                    $this->receiptStorageService->storeMany($purchase, $files, $request->user()->id);
+                }
+
                 return $purchase;
             });
 
@@ -256,6 +273,7 @@ class PurchaseController extends Controller
                 'shop',
                 'shopAddress',
                 'userPaymentMethod',
+                'attachments',
             ]);
 
             return response()->json([

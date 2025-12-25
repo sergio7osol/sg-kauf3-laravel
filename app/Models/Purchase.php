@@ -79,6 +79,11 @@ class Purchase extends Model
         return $this->hasMany(PurchaseLine::class)->orderBy('line_number');
     }
 
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(PurchaseReceiptFile::class);
+    }
+
     /**
      * Recalculate purchase totals from line items.
      * NOTE: Call this within a DB transaction when saving lines to ensure atomicity.
@@ -97,9 +102,14 @@ class Purchase extends Model
     public function toData(bool $includeLines = false): \App\DTO\Purchase\PurchaseData
     {
         $lines = [];
+        $attachments = [];
         
         if ($includeLines && $this->relationLoaded('lines')) {
             $lines = $this->lines->map(fn($line) => $line->toData())->all();
+        }
+
+        if ($this->relationLoaded('attachments')) {
+            $attachments = $this->attachments->map(fn($file) => $file->toData())->all();
         }
 
         $shop = $this->relationLoaded('shop') ? $this->shop->toData() : null;
@@ -124,6 +134,7 @@ class Purchase extends Model
             notes: $this->notes,
             receiptNumber: $this->receipt_number,
             lines: $lines,
+            attachments: $attachments,
             shop: $shop,
             shopAddress: $shopAddress,
             userPaymentMethod: $userPaymentMethod,
