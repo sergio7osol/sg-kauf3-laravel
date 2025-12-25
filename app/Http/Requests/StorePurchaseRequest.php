@@ -14,6 +14,14 @@ class StorePurchaseRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        // Handle multipart/form-data: decode JSON from 'data' field
+        if ($this->has('data') && is_string($this->data)) {
+            $decoded = json_decode($this->data, true);
+            if (is_array($decoded)) {
+                $this->merge($decoded);
+            }
+        }
+
         if ($this->has('purchaseTime') && $this->purchaseTime === '') {
             $this->merge(['purchaseTime' => null]);
         }
@@ -43,6 +51,10 @@ class StorePurchaseRequest extends FormRequest
             'lines.*.discountPercent' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'lines.*.discountAmount' => ['nullable', 'integer', 'min:0'],
             'lines.*.notes' => ['nullable', 'string', 'max:1000'],
+
+            // Attachments (optional)
+            'attachments' => ['nullable', 'array', 'max:10'],
+            'attachments.*' => ['file', 'mimes:pdf,jpeg,jpg,png', 'max:3072'],
         ];
     }
 
@@ -139,6 +151,10 @@ class StorePurchaseRequest extends FormRequest
             'lines.*.unitPrice.min' => 'Unit price must be at least 0.',
             'lines.*.taxRate.required' => 'Tax rate is required.',
             'lines.*.discountAmount.min' => 'Discount amount must be at least 0.',
+            'attachments.max' => 'You can upload a maximum of 10 files per purchase.',
+            'attachments.*.file' => 'Each attachment must be a valid file.',
+            'attachments.*.mimes' => 'Attachments must be PDF, JPEG, or PNG files.',
+            'attachments.*.max' => 'Each attachment must be less than 3 MB.',
         ];
     }
 }
