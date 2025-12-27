@@ -22,8 +22,18 @@ class DecathlonReceiptParser implements ReceiptParserInterface
 
     public function canParse(string $text): bool
     {
-        // Look for Decathlon identifiers
-        return (bool) preg_match('/\bDECATHLON\b/i', $text);
+        // Normalize text once for flexible matching (removes whitespace/newlines)
+        $normalized = preg_replace('/\s+/u', '', mb_strtoupper($text));
+
+        return
+            // Straightforward match (works for most invoices)
+            str_contains($normalized, 'DECATHLON')
+            // Some PDF exports break the word after "DECAT" and immediately print "Deutschland SE & Co."
+            || str_contains($normalized, 'DECATDEUTSCHLANDSE&CO')
+            // OCR variants sometimes insert spaces between letters
+            || (bool) preg_match('/D\s*E\s*C\s*A\s*T\s*H\s*L\s*O\s*N/u', $text)
+            // Fragmented 'DECAT' header text found in some PDF exports (fallback)
+            || (bool) preg_match('/D\s*E\s*C\s*A\s*T/i', $text);
     }
 
     public function getShopName(): string
@@ -170,7 +180,7 @@ class DecathlonReceiptParser implements ReceiptParserInterface
         $headerEnd = null;
 
         foreach ($lines as $idx => $line) {
-            if ($headerStart === null && preg_match('/^DECATHLON\b/i', trim($line))) {
+            if ($headerStart === null && (preg_match('/^DECATHLON\b/i', trim($line)) || preg_match('/^DECAT\b/i', trim($line)))) {
                 $headerStart = $idx;
                 continue;
             }
@@ -192,9 +202,21 @@ class DecathlonReceiptParser implements ReceiptParserInterface
                 }
 
                 // Street: "41-43 Krohnstieg" => normalize to "Krohnstieg 41-43"
-                if ($result['street'] === null && preg_match('/^(\d+(?:-\d+)?)\s+([A-Za-zäöüÄÖÜß][A-Za-zäöüÄÖÜß\-]+)$/u', $line, $m)) {
-                    $result['street'] = $m[2] . ' ' . $m[1];
-                    continue;
+                if ($result['street'] === null) {
+                    if (preg_match('/^(\d+(?:-\d+)?)\s+([A-Za-zäöüÄÖÜß][A-Za-zäöüÄÖÜß\-\s]+)$/u', $line, $m)) {
+                        $result['street'] = $m[2] . ' ' . $m[1];
+                        continue;
+                    }
+                    // Street: "Krohnstieg 41-43" (standard format)
+                    if (preg_match('/^([A-Za-zäöüÄÖÜß][A-Za-zäöüÄÖÜß\-\s]+)\s+(\d+(?:-\d+)?)$/u', $line, $m)) {
+                        $result['street'] = $m[1] . ' ' . $m[2];
+                        continue;
+                    }
+                    // Street: "Krohnstieg" (without number)
+                    if (preg_match('/^([A-Za-zäöüÄÖÜß][A-Za-zäöüÄÖÜß\-\s]+)$/u', $line, $m)) {
+                        $result['street'] = $m[1];
+                        continue;
+                    }
                 }
 
                 // Postal/city: "22415 Hamburg"
@@ -253,9 +275,9 @@ class DecathlonReceiptParser implements ReceiptParserInterface
                 continue;
             }
 
-            // Match product lines with RFID tag
-            // Pattern: "SHOES SH100 X-WARM MID MEN BLACK 44 RFID: 962121"
-            if (preg_match('/^(.+?)\s+RFID:\s*(\d+)$/i', $line, $matches)) {
+            // Pattern: "SHOES... RFID: 962121" (tolerant of OCR errors like "RFID :", "RFIO", "fifID", etc.)
+            // Matches "RFID" or similar, optionally followed by non-digits (like "- r" or " :"), then digits.
+            if (preg_match('/^(.+?)\s+(?:RFID|RFIO|fifID|RFiTI)[\s\:\-\'\$a-z]*(\d+)/i', $line, $matches)) {
                 $productName = trim($matches[1]);
                 $rfid = $matches[2];
 
