@@ -69,3 +69,5 @@ Route::get("/profiles/{id}", function ($id) {
         "links"=> $links
     ]);
 });
+
+Route::get('/health', fn () => response()->json(['status' => 'ok']));
