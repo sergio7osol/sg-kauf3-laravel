@@ -48,6 +48,8 @@ class PurchaseController extends Controller
             'dateFrom' => ['nullable', 'date'],
             'dateTo' => ['nullable', 'date', 'after_or_equal:dateFrom'],
             'status' => ['nullable', Rule::in(['draft', 'confirmed', 'cancelled'])],
+            'labelIds' => ['nullable', 'array'],
+            'labelIds.*' => ['integer', 'exists:labels,id'],
             'includeLines' => ['nullable', 'boolean'],
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
@@ -61,6 +63,7 @@ class PurchaseController extends Controller
             ->when(isset($validated['dateFrom']), fn ($q) => $q->where('purchase_date', '>=', $validated['dateFrom']))
             ->when(isset($validated['dateTo']), fn ($q) => $q->where('purchase_date', '<=', $validated['dateTo']))
             ->when(isset($validated['status']), fn ($q) => $q->where('status', $validated['status']))
+            ->when(!empty($validated['labelIds']), fn ($q) => $q->whereHas('labels', fn ($sub) => $sub->whereIn('labels.id', $validated['labelIds'])))
             ->orderBy('purchase_date', 'desc')
             ->orderBy('id', 'desc');
 
