@@ -56,6 +56,10 @@ class UpdatePurchaseRequest extends FormRequest
             // Attachments (optional)
             'attachments' => ['nullable', 'array', 'max:10'],
             'attachments.*' => ['file', 'mimes:pdf,jpeg,jpg,png', 'max:3072'],
+
+            // Labels (optional)
+            'labelIds' => ['nullable', 'array'],
+            'labelIds.*' => ['integer', 'exists:labels,id'],
         ];
     }
 
@@ -124,6 +128,23 @@ class UpdatePurchaseRequest extends FormRequest
                     $validator->errors()->add(
                         'userPaymentMethodId',
                         'The selected payment method does not belong to you.'
+                    );
+                }
+            }
+
+            // Ensure all labels belong to the authenticated user
+            if ($this->has('labelIds') && is_array($this->labelIds) && !empty($this->labelIds)) {
+                $userLabelIds = \App\Models\Label::where('user_id', $this->user()->id)
+                    ->whereIn('id', $this->labelIds)
+                    ->pluck('id')
+                    ->all();
+
+                $invalidIds = array_diff($this->labelIds, $userLabelIds);
+
+                if (!empty($invalidIds)) {
+                    $validator->errors()->add(
+                        'labelIds',
+                        'One or more labels do not belong to you.'
                     );
                 }
             }

@@ -65,7 +65,7 @@ class PurchaseController extends Controller
             ->orderBy('id', 'desc');
 
         // Eager-load relationships to avoid N+1
-        $query->with(['shop', 'shopAddress', 'userPaymentMethod', 'attachments']);
+        $query->with(['shop', 'shopAddress', 'userPaymentMethod', 'attachments', 'labels']);
 
         if ($includeLines) {
             $query->with(['lines' => fn ($relation) => $relation->orderBy('line_number')]);
@@ -109,6 +109,7 @@ class PurchaseController extends Controller
             'shopAddress',
             'userPaymentMethod',
             'attachments',
+            'labels',
         ]);
 
         return response()->json([
@@ -171,11 +172,16 @@ class PurchaseController extends Controller
                     $this->receiptStorageService->storeMany($purchase, $files, $request->user()->id);
                 }
 
+                // Sync labels if provided
+                if (isset($data['label_ids']) && is_array($data['label_ids'])) {
+                    $purchase->labels()->sync($data['label_ids']);
+                }
+
                 return $purchase;
             });
 
-            // Load lines and attachments for response
-            $purchase->load(['lines', 'attachments']);
+            // Load lines, attachments, and labels for response
+            $purchase->load(['lines', 'attachments', 'labels']);
 
             return response()->json([
                 'data' => $purchase->toData(includeLines: true)->toArray(),
@@ -264,6 +270,11 @@ class PurchaseController extends Controller
                     $this->receiptStorageService->storeMany($purchase, $files, $request->user()->id);
                 }
 
+                // Sync labels if provided
+                if (array_key_exists('label_ids', $data)) {
+                    $purchase->labels()->sync($data['label_ids'] ?? []);
+                }
+
                 return $purchase;
             });
 
@@ -274,6 +285,7 @@ class PurchaseController extends Controller
                 'shopAddress',
                 'userPaymentMethod',
                 'attachments',
+                'labels',
             ]);
 
             return response()->json([

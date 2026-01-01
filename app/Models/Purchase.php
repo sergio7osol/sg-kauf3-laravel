@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Purchase extends Model
@@ -85,6 +86,15 @@ class Purchase extends Model
     }
 
     /**
+     * Get the labels attached to this purchase.
+     */
+    public function labels(): BelongsToMany
+    {
+        return $this->belongsToMany(Label::class, 'label_purchase')
+            ->withPivot('created_at');
+    }
+
+    /**
      * Recalculate purchase totals from line items.
      * NOTE: Call this within a DB transaction when saving lines to ensure atomicity.
      */
@@ -112,6 +122,11 @@ class Purchase extends Model
             $attachments = $this->attachments->map(fn($file) => $file->toData())->all();
         }
 
+        $labels = [];
+        if ($this->relationLoaded('labels')) {
+            $labels = $this->labels->map(fn($label) => $label->toData())->all();
+        }
+
         $shop = $this->relationLoaded('shop') ? $this->shop->toData() : null;
         $shopAddress = $this->relationLoaded('shopAddress') ? $this->shopAddress->toData() : null;
         $userPaymentMethod = $this->relationLoaded('userPaymentMethod') && $this->userPaymentMethod
@@ -135,6 +150,7 @@ class Purchase extends Model
             receiptNumber: $this->receipt_number,
             lines: $lines,
             attachments: $attachments,
+            labels: $labels,
             shop: $shop,
             shopAddress: $shopAddress,
             userPaymentMethod: $userPaymentMethod,

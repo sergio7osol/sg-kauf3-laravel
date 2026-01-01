@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\PurchaseController;
 use App\Http\Controllers\Api\PurchaseReceiptFileController;
 use App\Http\Controllers\Api\UserPaymentMethodController;
 use App\Http\Controllers\Api\ReceiptController;
+use App\Http\Controllers\Api\LabelController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -43,6 +44,9 @@ Route::prefix('purchases')->middleware('auth:sanctum')->group(function () {
     // Purchase receipt attachments
     Route::get('/{purchase}/attachments/{attachment}/download', [PurchaseReceiptFileController::class, 'download']);
     Route::delete('/{purchase}/attachments/{attachment}', [PurchaseReceiptFileController::class, 'destroy']);
+
+    // Purchase labels
+    Route::put('/{purchase}/labels', [LabelController::class, 'syncPurchaseLabels']);
 });
 
 Route::prefix('user-payment-methods')->middleware('auth:sanctum')->group(function () {
@@ -57,6 +61,15 @@ Route::prefix('user-payment-methods')->middleware('auth:sanctum')->group(functio
 Route::prefix('receipts')->middleware('auth:sanctum')->group(function () {
     Route::post('/parse', [ReceiptController::class, 'parse']);
     Route::get('/supported-shops', [ReceiptController::class, 'supportedShops']);
+});
+
+Route::prefix('labels')->middleware('auth:sanctum')->group(function () {
+    Route::get('/', [LabelController::class, 'index']);
+    Route::post('/', [LabelController::class, 'store']);
+    Route::get('/{label}', [LabelController::class, 'show']);
+    Route::put('/{label}', [LabelController::class, 'update']);
+    Route::patch('/{label}', [LabelController::class, 'update']);
+    Route::delete('/{label}', [LabelController::class, 'destroy']);
 });
 
 Route::middleware('auth:sanctum')->resource('/links', Links::class );
