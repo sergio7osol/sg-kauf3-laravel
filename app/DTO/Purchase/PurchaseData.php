@@ -2,6 +2,7 @@
 
 namespace App\DTO\Purchase;
 
+use App\DTO\LabelData;
 use App\DTO\Shop\ShopData;
 use App\DTO\Shop\ShopAddressData;
 use App\DTO\UserPaymentMethodData;
@@ -14,6 +15,7 @@ readonly class PurchaseData
     /**
      * @param PurchaseLineData[] $lines
      * @param PurchaseReceiptFileData[] $attachments
+     * @param LabelData[] $labels
      */
     public function __construct(
         public int $id,
@@ -32,6 +34,7 @@ readonly class PurchaseData
         public ?string $receiptNumber,
         public array $lines = [],
         public array $attachments = [],
+        public array $labels = [],
         public ?ShopData $shop = null,
         public ?ShopAddressData $shopAddress = null,
         public ?UserPaymentMethodData $userPaymentMethod = null,
@@ -59,6 +62,7 @@ readonly class PurchaseData
             'receiptNumber' => $this->receiptNumber,
             'lines' => array_map(fn($line) => $line->toArray(), $this->lines),
             'attachments' => array_map(fn($attachment) => $attachment->toArray(), $this->attachments),
+            'labels' => array_map(fn($label) => $label->toArray(), $this->labels),
         ];
 
         // Include shop relation if loaded
